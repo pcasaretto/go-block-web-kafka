@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"flag"
 	"log"
 	"net/http"
 	"time"
@@ -11,11 +11,11 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello\n")
-}
+var port = flag.String("p", "3000", "PORT")
 
 func main() {
+	flag.Parse()
+
 	ctx := context.Background()
 	kafkaWriter := kafka.NewWriter(kafka.WriterConfig{
 		Brokers: []string{"localhost:9092"},
@@ -55,7 +55,7 @@ func main() {
 
 	go blocker.Run(ctx)
 	http.HandleFunc("/request", f)
-	http.ListenAndServe(":3001", nil)
+	http.ListenAndServe(":"+*port, nil)
 	if err := kafkaWriter.Close(); err != nil {
 		log.Fatal("failed to close writer:", err)
 	}
